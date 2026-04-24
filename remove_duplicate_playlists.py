@@ -32,15 +32,15 @@ def parse_curl_command(curl_command: str) -> str:
     headers_dict = {}
     
     # Extract -H headers (format: -H 'key: value' or -H "key: value")
-    # Support both single and double quotes
-    header_pattern = r'-H\s+["\']([^:"\']+):([^"\']*?)["\']'
-    header_matches = re.findall(header_pattern, curl_command, re.MULTILINE)
+    # Use lazy matching to handle values with quotes inside
+    header_pattern = r"-H\s+['\"]([^:]+):(.*?)['\"](?=\s|$|\\)"
+    header_matches = re.findall(header_pattern, curl_command, re.MULTILINE | re.DOTALL)
     for key, value in header_matches:
         headers_dict[key.lower().strip()] = value.strip()
     
-    # Extract -b cookie and convert to header format
-    # Support both -b 'value' and --data-raw (which we ignore)
-    cookie_match = re.search(r"-b\s+['\"]([^'\"]+)['\"]", curl_command)
+    # Extract -b cookie 
+    cookie_pattern = r"-b\s+['\"](.+?)['\"](?=\s|$|\\)"
+    cookie_match = re.search(cookie_pattern, curl_command, re.MULTILINE | re.DOTALL)
     if cookie_match:
         headers_dict['cookie'] = cookie_match.group(1)
     

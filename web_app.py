@@ -279,7 +279,7 @@ def setup_platform(platform):
     connection_type = request.args.get('as', 'source')
     
     if request.method == 'POST':
-        setup_type = request.form.get('setup_type', 'oauth')  # Default to OAuth now
+        setup_type = request.form.get('setup_type', 'browser')  # Default to Browser Headers
         
         if setup_type == 'oauth':
             # Start OAuth flow

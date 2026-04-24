@@ -1,45 +1,45 @@
-# 🎵 K(MT) Music Transfer
+# K(MT) Music Transfer
 
 Transfer playlists between music streaming platforms. Supports Spotify, YouTube Music, Apple Music, TIDAL, Deezer, and more.
 
 ![Supported Platforms](https://img.shields.io/badge/Platforms-28+-green)
 ![Python](https://img.shields.io/badge/Python-3.9+-blue)
 
-## 🎯 Supported Platforms
+## Supported Platforms
 
 | Platform | Status | Notes |
 |----------|--------|-------|
-| 🎵 **YouTube Music** | ✅ Ready | OAuth & Browser Headers supported |
-| 🎧 **Spotify** | ✅ Ready | Spotify Web API with OAuth |
-| 🍎 **Apple Music** | 🚧 In Development | MusicKit required |
-| 🎼 **TIDAL** | 📋 Planned | |
-| 💿 **Deezer** | 📋 Planned | |
-| ☁️ **SoundCloud** | 📋 Planned | |
-| 🎹 **Amazon Music** | 📋 Planned | |
-| 📻 **KKBOX** | 📋 Planned | |
-| 🎸 **Last.fm** | 📋 Planned | |
-| 🎤 **More** | 📋 Planned | Qobuz, Anghami, Napster, Pandora... |
+| **YouTube Music** | Ready | OAuth & Browser Headers supported |
+| **Spotify** | Not Supported | Requires Premium subscription |
+| **Apple Music** | Not Supported | MusicKit API required |
+| **TIDAL** | Not Supported | - |
+| **Deezer** | Not Supported | - |
+| **SoundCloud** | Not Supported | - |
+| **Amazon Music** | Not Supported | - |
+| **KKBOX** | Not Supported | - |
+| **Last.fm** | Not Supported | - |
+| **More** | Not Supported | Qobuz, Anghami, Napster, Pandora... |
 
-**Legend:** ✅ Ready | 🚧 In Development | 📋 Planned
+**Legend:** Ready | Not Supported
 
 ---
 
-## ✨ Features
+## Features
 
-### Available (YouTube Music & Spotify)
-- ✅ Transfer playlists between accounts
-- ✅ Transfer all playlists at once
-- ✅ Transfer Liked Songs, Saved Albums, Subscriptions
-- ✅ Automatic track search and matching
-- ✅ Progress bar during transfer
-- ✅ Support for Browser Headers (easy) and OAuth (secure)
-- ✅ Cross-platform transfer (e.g., Spotify → YouTube Music)
+### Available (YouTube Music)
+- Transfer playlists between accounts
+- Transfer all playlists at once
+- Transfer Liked Songs, Saved Albums, Subscriptions
+- Automatic track search and matching
+- Progress bar during transfer
+- Support for Browser Headers authentication
+- CSV Import/Export for playlist transfer
 
-### Multi-Platform Roadmap
-- 🚧 Unified API for all platforms
-- 🚧 Smart matching algorithm (cross-platform track matching)
-- 🚧 Web UI (Flask)
-- 🚧 Import/Export from files (CSV, JSON)
+### Roadmap
+- Unified API for all platforms
+- Smart matching algorithm (cross-platform track matching)
+- Web UI (Flask)
+- Import/Export from files (CSV, JSON)
 
 ## Installation
 
@@ -67,10 +67,10 @@ python ytmusic_transfer.py setup --dest --browser
 
 Follow these steps:
 1. Open browser and go to https://music.youtube.com and login
-2. Press **F12** to open Developer Tools → **Network** tab
+2. Press F12 to open Developer Tools → Network tab
 3. Play a song or click something
-4. Find the request named **'browse'** in the Network tab
-5. Right-click on the request → **Copy** → **Copy as cURL (bash)**
+4. Find the request named 'browse' in the Network tab
+5. Right-click on the request → Copy → Copy as cURL (bash)
 6. Paste everything back and press Enter twice
 
 ---
@@ -78,8 +78,8 @@ Follow these steps:
 ### Method 2: OAuth (More durable, requires Google Cloud Project)
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-2. Create a new project → Enable **YouTube Data API v3**
-3. **Credentials > Create Credentials > OAuth client ID** → Select **Desktop app**
+2. Create a new project → Enable YouTube Data API v3
+3. Credentials > Create Credentials > OAuth client ID → Select Desktop app
 4. Run:
 ```bash
 python ytmusic_transfer.py setup --source --oauth --client-id "ID" --client-secret "SECRET"
@@ -139,7 +139,7 @@ python ytmusic_transfer.py transfer-subscriptions
 | `transfer-saved-albums` | Transfer saved albums |
 | `transfer-subscriptions` | Transfer subscriptions |
 
-## 🏗️ Architecture (For Contributors)
+## Architecture (For Contributors)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -159,9 +159,9 @@ python ytmusic_transfer.py transfer-subscriptions
 │  └── search_track()                                          │
 ├─────────────────────────────────────────────────────────────┤
 │  Providers:                                                  │
-│  ├── YouTubeMusicProvider ✅                                 │
-│  ├── SpotifyProvider ✅                                      │
-│  ├── AppleMusicProvider 🚧                                   │
+│  ├── YouTubeMusicProvider (Ready)                            │
+│  ├── SpotifyProvider (Not Supported)                         │
+│  ├── AppleMusicProvider (Not Supported)                      │
 │  └── ... (more coming)                                       │
 ├─────────────────────────────────────────────────────────────┤
 │  TransferEngine                                              │
@@ -171,7 +171,7 @@ python ytmusic_transfer.py transfer-subscriptions
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Want to add a new platform? Follow these steps:
 
@@ -198,34 +198,34 @@ class SpotifyProvider(BaseProvider):
         pass
 ```
 
-## 📋 Roadmap
+## Roadmap
 
-### Phase 1: Foundation ✅
+### Phase 1: Foundation
 - [x] YouTube Music Provider
 - [x] CLI Interface
 - [x] Transfer between same platform
 - [x] Web UI with platform selection
 
-### Phase 2: Multi-Platform ✅
+### Phase 2: Multi-Platform
 - [x] Spotify Provider
 - [ ] Apple Music Provider
 - [ ] Unified Transfer Engine
 - [ ] Cross-platform track matching
 
-### Phase 3: Advanced Features 📋
+### Phase 3: Advanced Features
 - [ ] Smart matching with fuzzy search
 - [ ] CSV/JSON import-export
 - [ ] Batch operations
 - [ ] Playlist synchronization (sync changes)
 
-### Phase 4: More Platforms 📋
+### Phase 4: More Platforms
 - [ ] TIDAL
 - [ ] Deezer
 - [ ] Amazon Music
 - [ ] SoundCloud
 - [ ] KKBOX, Last.fm, etc.
 
-## 📝 Notes
+## Notes
 
 - OAuth tokens are saved to `~/.ytmusic_transfer/`
 - Tracks not found will be skipped and shown in the report
@@ -233,10 +233,10 @@ class SpotifyProvider(BaseProvider):
 - **Browser headers expire** every 2-4 weeks and need to be renewed
 - Cross-platform transfer requires matching algorithm (ISRC or title+artist)
 
-## 📄 License
+## License
 
 MIT License - Free to use, modify at your own risk
 
 ---
 
-**Support this project:** ⭐ Star on GitHub or share with friends!
+**Support this project:** Star on GitHub or share with friends!

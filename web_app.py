@@ -383,9 +383,6 @@ def setup_platform(platform):
                     
             except Exception as e:
                 flash(f'เกิดข้อผิดพลาด: {str(e)}', 'error')
-        
-        elif setup_type == 'oauth':
-            flash('OAuth ยังไม่รองรับใน Web UI กรุณาใช้ Browser Headers', 'info')
     
     return render_template('setup.html', platform=platform)
 

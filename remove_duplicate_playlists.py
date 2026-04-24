@@ -179,12 +179,17 @@ def main():
         type=str,
         help='cURL command from browser (for authentication)'
     )
+    parser.add_argument(
+        '--curl-file', '-cf',
+        type=str,
+        help='Path to file containing cURL command (easier for PowerShell)'
+    )
     
     args = parser.parse_args()
     
     # Validate arguments
-    if not args.auth_file and not args.curl:
-        parser.error("Either --auth-file or --curl must be provided")
+    if not args.auth_file and not args.curl and not args.curl_file:
+        parser.error("Either --auth-file, --curl, or --curl-file must be provided")
     
     print("=" * 60)
     print("K(MT) Music Transfer - Duplicate Playlist Remover")
@@ -204,6 +209,11 @@ def main():
             auth_config['auth_file'] = args.auth_file
         elif args.curl:
             headers_raw = parse_curl_command(args.curl)
+            auth_config['headers_raw'] = headers_raw
+        elif args.curl_file:
+            with open(args.curl_file, 'r', encoding='utf-8') as f:
+                curl_command = f.read()
+            headers_raw = parse_curl_command(curl_command)
             auth_config['headers_raw'] = headers_raw
         
         print("\n[Connecting...]")

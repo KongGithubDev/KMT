@@ -74,7 +74,7 @@ def find_duplicate_playlists(playlists: List[Dict[str, Any]]) -> Dict[str, List[
     name_groups = defaultdict(list)
     
     for playlist in playlists:
-        name = playlist.get('name', '').strip()
+        name = playlist.name.strip()
         if name:
             name_groups[name].append(playlist)
     
@@ -113,10 +113,10 @@ def remove_duplicate_playlists(
         
         stats['total_duplicates'] += len(playlists)
         
-        # เรียงตามวันที่สร้าง (ถ้ามี)
+        # เรียงตาม platform_id
         sorted_playlists = sorted(
             playlists,
-            key=lambda x: x.get('created_at', '') or x.get('id', '')
+            key=lambda x: x.platform_id or ''
         )
         
         # เลือกว่าจะเก็บอันไหน
@@ -128,12 +128,12 @@ def remove_duplicate_playlists(
             to_remove = sorted_playlists[:-1]
         
         kept = sorted_playlists[keep_index]
-        print(f"   [KEEP] ID={kept.get('id')} (created: {kept.get('created_at', 'N/A')})")
+        print(f"   [KEEP] ID={kept.platform_id}")
         stats['kept'] += 1
         
         # ลบที่เหลือ
         for playlist in to_remove:
-            playlist_id = playlist.get('id')
+            playlist_id = playlist.platform_id
             print(f"   Removed: ID={playlist_id}")
             
             if not dry_run:
@@ -256,10 +256,6 @@ def main():
             print("-" * 60)
             print("[OK] cURL command received")
             headers_raw = parse_curl_command(curl_command)
-            
-            # Debug: show parsed headers count
-            print(f"[DEBUG] Parsed {len(headers_raw.split(chr(10)))} headers")
-            
             auth_config['headers_raw'] = headers_raw
         
         print("\n[Connecting...]")

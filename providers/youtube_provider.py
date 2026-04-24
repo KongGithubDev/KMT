@@ -48,16 +48,12 @@ class YouTubeMusicProvider(BaseProvider):
                 import json
                 import tempfile
                 import os
-                # Debug: show first 200 chars of headers
-                print(f"[DEBUG] Headers preview: {headers_raw[:200]}...")
-                print(f"[DEBUG] Headers length: {len(headers_raw)} chars")
                 # Parse headers into dict format that YTMusic expects
                 auth_dict = {}
                 for line in headers_raw.strip().split('\n'):
                     if ':' in line:
                         key, value = line.split(':', 1)
                         auth_dict[key.strip()] = value.strip()
-                print(f"[DEBUG] Parsed {len(auth_dict)} headers into auth dict")
                 with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
                     json.dump(auth_dict, f)
                     temp_file = f.name

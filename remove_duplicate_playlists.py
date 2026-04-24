@@ -184,12 +184,19 @@ def main():
         type=str,
         help='Path to file containing cURL command (easier for PowerShell)'
     )
+    parser.add_argument(
+        '--interactive', '-i',
+        action='store_true',
+        help='Interactive mode: paste cURL and press Enter twice to confirm'
+    )
     
     args = parser.parse_args()
     
     # Validate arguments
-    if not args.auth_file and not args.curl and not args.curl_file:
-        parser.error("Either --auth-file, --curl, or --curl-file must be provided")
+    has_auth = args.auth_file or args.curl or args.curl_file or args.interactive
+    if not has_auth:
+        # Default to interactive mode if no auth method specified
+        args.interactive = True
     
     print("=" * 60)
     print("K(MT) Music Transfer - Duplicate Playlist Remover")
@@ -213,6 +220,34 @@ def main():
         elif args.curl_file:
             with open(args.curl_file, 'r', encoding='utf-8') as f:
                 curl_command = f.read()
+            headers_raw = parse_curl_command(curl_command)
+            auth_config['headers_raw'] = headers_raw
+        elif args.interactive:
+            # Interactive mode: prompt for cURL with double Enter confirmation
+            print("\n[Interactive Mode]")
+            print("Paste your cURL command from browser (Copy as cURL), then press Enter twice to confirm:")
+            print("-" * 60)
+            
+            lines = []
+            empty_count = 0
+            while empty_count < 2:
+                try:
+                    line = input()
+                    if line.strip() == '':
+                        empty_count += 1
+                    else:
+                        empty_count = 0
+                        lines.append(line)
+                except EOFError:
+                    break
+            
+            curl_command = '\n'.join(lines)
+            if not curl_command.strip():
+                print("[FAILED] No cURL command provided")
+                sys.exit(1)
+            
+            print("-" * 60)
+            print("[OK] cURL command received")
             headers_raw = parse_curl_command(curl_command)
             auth_config['headers_raw'] = headers_raw
         

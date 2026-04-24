@@ -256,6 +256,10 @@ def main():
             print("-" * 60)
             print("[OK] cURL command received")
             headers_raw = parse_curl_command(curl_command)
+            
+            # Debug: show parsed headers count
+            print(f"[DEBUG] Parsed {len(headers_raw.split(chr(10)))} headers")
+            
             auth_config['headers_raw'] = headers_raw
         
         print("\n[Connecting...]")

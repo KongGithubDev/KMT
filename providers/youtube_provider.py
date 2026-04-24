@@ -45,9 +45,23 @@ class YouTubeMusicProvider(BaseProvider):
             if auth_file and os.path.exists(auth_file):
                 self.ytm = YTMusic(auth_file)
             elif headers_raw:
-                from ytmusicapi import setup
-                # Setup and create temporary auth
-                self.ytm = setup(headers_raw=headers_raw)
+                import json
+                import tempfile
+                import os
+                # Debug: show first 200 chars of headers
+                print(f"[DEBUG] Headers preview: {headers_raw[:200]}...")
+                print(f"[DEBUG] Headers length: {len(headers_raw)} chars")
+                # Use YTMusic.setup class method
+                auth_json = YTMusic.setup(headers_raw=headers_raw)
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+                    json.dump(auth_json, f)
+                    temp_file = f.name
+                self.ytm = YTMusic(temp_file)
+                # Clean up temp file after loading
+                try:
+                    os.unlink(temp_file)
+                except:
+                    pass
             else:
                 raise ValueError("Must provide 'auth_file' or 'headers_raw'")
             

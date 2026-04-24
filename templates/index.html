@@ -275,10 +275,11 @@ function showPlatformSelection(type) {
         for (const [platformId, platform] of Object.entries(platformsData)) {
             const card = document.createElement('div');
             card.className = 'platform-card';
-            card.style.cursor = platform.status === 'ready' ? 'pointer' : 'not-allowed';
-            card.style.opacity = platform.status === 'ready' ? '1' : '0.5';
+            const isEnabled = platform.status === 'ready';
+            card.style.cursor = isEnabled ? 'pointer' : 'not-allowed';
+            card.style.opacity = isEnabled ? '1' : '0.5';
 
-            if (platform.status === 'ready') {
+            if (isEnabled) {
                 card.onclick = () => selectPlatform(platformId);
             }
 
@@ -307,7 +308,7 @@ function showPlatformSelection(type) {
                     ${logoHtml}
                 </div>
                 <span class="platform-name">${platform.name}</span>
-                <span class="platform-status badge ${platform.status === 'ready' ? 'badge-success' : 'badge-warning'}">
+                <span class="platform-status badge ${platform.status === 'ready' ? 'badge-success' : platform.status === 'not_supported' ? 'badge-error' : 'badge-warning'}">
                     ${platform.status === 'ready' ? 'พร้อมใช้งาน' : platform.description}
                 </span>
             `;

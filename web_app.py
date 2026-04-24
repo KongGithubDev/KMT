@@ -79,191 +79,191 @@ def index():
         'spotify': {
             'name': 'Spotify',
             'icon': 'spotify',
-            'status': 'ready',
+            'status': 'not_supported',
             'color': '#1DB954',
-            'description': 'รองรับเต็มรูปแบบ'
+            'description': 'ไม่รองรับ (ต้องการ Premium)'
         },
         'apple': {
             'name': 'Apple Music',
             'icon': 'apple',
-            'status': 'coming_soon',
+            'status': 'not_supported',
             'color': '#FA57C1',
-            'description': 'กำลังพัฒนา'
+            'description': 'ไม่รองรับ'
         },
         'tidal': {
             'name': 'TIDAL',
             'icon': 'tidal',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#000000',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'deezer': {
             'name': 'Deezer',
             'icon': 'deezer',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#EF5466',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'soundcloud': {
             'name': 'SoundCloud',
             'icon': 'soundcloud',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#FF5500',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'amazon': {
             'name': 'Amazon Music',
             'icon': 'amazon',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#00A8E1',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'kkbox': {
             'name': 'KKBOX',
             'icon': 'kkbox',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#00C9A7',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'yandex': {
             'name': 'Yandex Music',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#FFCC00',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'bandcamp': {
             'name': 'Bandcamp',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#629AA9',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'napster': {
             'name': 'Napster',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#E62E2D',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'qobuz': {
             'name': 'Qobuz',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#2E5DFF',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'beatport': {
             'name': 'Beatport',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#00A7E1',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'pandora': {
             'name': 'Pandora',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#005483',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'anghami': {
             'name': 'Anghami',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#E94F3B',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'lastfm': {
             'name': 'Last.fm',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#D51007',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'boomplay': {
             'name': 'Boomplay',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#E91E63',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'audiomack': {
             'name': 'Audiomack',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#E35B20',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'jiosaavn': {
             'name': 'JioSaavn',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#2BC48A',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'gaana': {
             'name': 'Gaana',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#E72C30',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'resso': {
             'name': 'Resso',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#FF0050',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'joox': {
             'name': 'JOOX',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#00CC66',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'bugs': {
             'name': 'Bugs',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#E31937',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'melon': {
             'name': 'Melon',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#00CD3C',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'genie': {
             'name': 'Genie',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#0088FF',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'flo': {
             'name': 'FLO',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#3F51B5',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'vibe': {
             'name': 'VIBE',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#FF0055',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         },
         'soribada': {
             'name': 'Soribada',
             'icon': 'music',
-            'status': 'planned',
+            'status': 'not_supported',
             'color': '#00AEEF',
-            'description': 'แผนอนาคต'
+            'description': 'ไม่รองรับ'
         }
     }
     return render_template('index.html', platforms=platforms)

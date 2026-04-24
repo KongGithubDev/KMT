@@ -222,3 +222,15 @@ class YouTubeMusicProvider(BaseProvider):
             return True
         except Exception:
             return False
+    
+    def delete_playlist(self, playlist_id: str) -> bool:
+        """Delete a playlist"""
+        if not self.ytm:
+            raise RuntimeError("Not authenticated")
+        
+        try:
+            self.ytm.delete_playlist(playlist_id)
+            return True
+        except Exception as e:
+            print(f"Failed to delete playlist: {e}")
+            return False

@@ -593,12 +593,6 @@ def import_csv_playlist():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/csv-transfer')
-def csv_transfer_page():
-    """Page for CSV-based transfer (no Spotify API needed)"""
-    return render_template('csv_transfer.html')
-
-
 @app.route('/callback/<platform>')
 def oauth_callback(platform):
     """Handle OAuth callback from platforms"""

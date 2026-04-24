@@ -4,19 +4,49 @@ K(MT) Music Transfer - Duplicate Playlist Remover
 ตรวจสอบและลบเพลย์ลิสต์ที่มีชื่อซ้ำกัน
 
 Usage:
-    python remove_duplicate_playlists.py --platform youtube --keep first
-    python remove_duplicate_playlists.py --platform youtube --keep last
-    python remove_duplicate_playlists.py --platform youtube --dry-run
+    python remove_duplicate_playlists.py --platform youtube --keep first --curl "curl command"
+    python remove_duplicate_playlists.py --platform youtube --keep last --curl "curl command"
+    python remove_duplicate_playlists.py --platform youtube --dry-run --curl "curl command"
 """
 
 import argparse
+import re
 import sys
 from collections import defaultdict
 from typing import List, Dict, Any, Optional
 
 # Import providers
 from providers.youtube_provider import YouTubeMusicProvider
-from utils.config_manager import ConfigManager
+
+
+def parse_curl_command(curl_command: str) -> str:
+    """
+    Parse cURL command and extract headers in the format ytmusicapi expects.
+    
+    Args:
+        curl_command: Raw cURL command from browser
+        
+    Returns:
+        Clean headers string for ytmusicapi
+    """
+    headers_dict = {}
+    
+    # Extract -H headers (format: -H 'key: value')
+    header_matches = re.findall(r"-H\s+'([^:]+):(.+?)'(?:\s*\\?\n?|$)", curl_command, re.MULTILINE)
+    for key, value in header_matches:
+        headers_dict[key.lower().strip()] = value.strip()
+    
+    # Extract -b cookie and convert to header format
+    cookie_match = re.search(r"-b\s+'([^']+)'", curl_command)
+    if cookie_match:
+        headers_dict['cookie'] = cookie_match.group(1)
+    
+    # Build clean headers in format that ytmusicapi expects
+    header_lines = []
+    for key, value in headers_dict.items():
+        header_lines.append(f"{key}: {value}")
+    
+    return '\n'.join(header_lines)
 
 
 def get_provider(platform: str):
@@ -71,8 +101,8 @@ def remove_duplicate_playlists(
     }
     
     for name, playlists in duplicates.items():
-        print(f"\n🎵 เพลย์ลิสต์: '{name}'")
-        print(f"   พบ {len(playlists)} รายการซ้ำ")
+        print(f"\n[Playlist] '{name}'")
+        print(f"   Found {len(playlists)} duplicates")
         
         stats['total_duplicates'] += len(playlists)
         
@@ -91,29 +121,29 @@ def remove_duplicate_playlists(
             to_remove = sorted_playlists[:-1]
         
         kept = sorted_playlists[keep_index]
-        print(f"   ✅ เก็บ: ID={kept.get('id')} (created: {kept.get('created_at', 'N/A')})")
+        print(f"   [KEEP] ID={kept.get('id')} (created: {kept.get('created_at', 'N/A')})")
         stats['kept'] += 1
         
         # ลบที่เหลือ
         for playlist in to_remove:
             playlist_id = playlist.get('id')
-            print(f"   🗑️  ลบ: ID={playlist_id}")
+            print(f"   Removed: ID={playlist_id}")
             
             if not dry_run:
                 try:
                     success = provider.delete_playlist(playlist_id)
                     if success:
                         stats['removed'] += 1
-                        print(f"      ✓ ลบสำเร็จ")
+                        print(f"      [OK] Deleted successfully")
                     else:
-                        stats['errors'].append(f"ไม่สามารถลบ {playlist_id}")
-                        print(f"      ✗ ลบไม่สำเร็จ")
+                        stats['errors'].append(f"Cannot delete {playlist_id}")
+                        print(f"      [FAIL] Delete failed")
                 except Exception as e:
                     stats['errors'].append(f"Error deleting {playlist_id}: {str(e)}")
-                    print(f"      ✗ Error: {str(e)}")
+                    print(f"      [ERROR] {str(e)}")
             else:
                 stats['removed'] += 1
-                print(f"      [Dry run - ไม่ได้ลบจริง]")
+                print(f"      [Dry run - not actually deleted]")
     
     return stats
 
@@ -144,47 +174,59 @@ def main():
         type=str,
         help='Path to authentication file (optional)'
     )
+    parser.add_argument(
+        '--curl', '-c',
+        type=str,
+        help='cURL command from browser (for authentication)'
+    )
     
     args = parser.parse_args()
     
+    # Validate arguments
+    if not args.auth_file and not args.curl:
+        parser.error("Either --auth-file or --curl must be provided")
+    
     print("=" * 60)
-    print("🎵 K(MT) Music Transfer - Duplicate Playlist Remover")
+    print("K(MT) Music Transfer - Duplicate Playlist Remover")
     print("=" * 60)
-    print(f"📱 Platform: {args.platform}")
-    print(f"🔧 Keep strategy: {args.keep}")
-    print(f"🧪 Dry run: {args.dry_run}")
+    print(f"Platform: {args.platform}")
+    print(f"Keep strategy: {args.keep}")
+    print(f"Dry run: {args.dry_run}")
     print("=" * 60)
     
     try:
         # Initialize provider
         provider = get_provider(args.platform)
         
-        # Authenticate
+        # Prepare authentication
         auth_config = {}
         if args.auth_file:
             auth_config['auth_file'] = args.auth_file
+        elif args.curl:
+            headers_raw = parse_curl_command(args.curl)
+            auth_config['headers_raw'] = headers_raw
         
-        print("\n🔐 กำลังเชื่อมต่อ...")
+        print("\n[Connecting...]")
         if not provider.authenticate(auth_config):
-            print("❌ เชื่อมต่อไม่สำเร็จ")
+            print("[FAILED] Authentication failed")
             sys.exit(1)
         
-        print("✅ เชื่อมต่อสำเร็จ")
+        print("[OK] Connected successfully")
         
         # Get all playlists
-        print("\n📋 กำลังดึงรายการเพลย์ลิสต์...")
+        print("\n[Fetching playlists...]")
         playlists = provider.get_playlists()
-        print(f"   พบทั้งหมด {len(playlists)} เพลย์ลิสต์")
+        print(f"   Total playlists: {len(playlists)}")
         
         # Find duplicates
-        print("\n🔍 กำลังตรวจหาเพลย์ลิสต์ที่ซ้ำกัน...")
+        print("\n[Checking for duplicates...]")
         duplicates = find_duplicate_playlists(playlists)
         
         if not duplicates:
-            print("✅ ไม่พบเพลย์ลิสต์ที่ซ้ำกัน")
+            print("[OK] No duplicate playlists found")
             sys.exit(0)
         
-        print(f"⚠️ พบ {len(duplicates)} กลุ่มที่มีชื่อซ้ำกัน")
+        print(f"[FOUND] {len(duplicates)} groups with duplicate names")
         
         # Remove duplicates
         stats = remove_duplicate_playlists(
@@ -196,26 +238,26 @@ def main():
         
         # Print summary
         print("\n" + "=" * 60)
-        print("📊 สรุปผล")
+        print("SUMMARY")
         print("=" * 60)
-        print(f"   จำนวนกลุ่มที่ซ้ำ: {len(duplicates)}")
-        print(f"   เพลย์ลิสต์ที่ซ้ำทั้งหมด: {stats['total_duplicates']}")
-        print(f"   เก็บไว้: {stats['kept']}")
-        print(f"   ลบออก: {stats['removed']}")
+        print(f"   Duplicate groups: {len(duplicates)}")
+        print(f"   Total duplicates: {stats['total_duplicates']}")
+        print(f"   Kept: {stats['kept']}")
+        print(f"   Removed: {stats['removed']}")
         
         if stats['errors']:
-            print(f"   ⚠️ ข้อผิดพลาด: {len(stats['errors'])}")
+            print(f"   Errors: {len(stats['errors'])}")
             for error in stats['errors']:
                 print(f"      - {error}")
         
         if args.dry_run:
-            print("\n📝 นี่เป็นการทดสอบ (dry run) ไม่มีการลบจริง")
-            print("   รันคำสั่งอีกครั้งโดยไม่ใส่ --dry-run เพื่อลบจริง")
+            print("\n[NOTE] This was a dry run. No actual deletions occurred.")
+            print("   Run without --dry-run to delete for real.")
         
-        print("\n✅ เสร็จสิ้น")
+        print("\n[DONE]")
         
     except Exception as e:
-        print(f"\n❌ เกิดข้อผิดพลาด: {str(e)}")
+        print(f"\n[ERROR] {str(e)}")
         sys.exit(1)
 
 

@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block title %}Universal Music Transfer - โอนเพลย์ลิสต์ระหว่างแพลตฟอร์ม{% endblock %}
+
+{% block content %}
+<!-- Platforms data for JavaScript -->
+<script>
+window.platformsData = {{ platforms | tojson }};
+</script>
+<!-- Hero Section -->
+<section class="section" style="padding-top: 80px; padding-bottom: 48px;">
+    <div class="container text-center">
+        <h1 class="text-display mb-4">
+            โอนเพลย์ลิสต์<br>ระหว่างบริการเพลง
+        </h1>
+        <p class="text-body-large mb-6" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+            โอนเพลย์ลิสต์ของคุณระหว่างแพลตฟอร์มเพลงต่างๆ ได้อย่างง่ายดาย
+            รองรับ Spotify, TIDAL, Apple Music, YouTube, Amazon Music, Deezer และอีกมากมาย
+        </p>
+        <div class="flex items-center justify-center gap-3">
+            <a href="#platforms" class="btn btn-primary">
+                <i data-lucide="arrow-down" style="width: 16px; height: 16px;"></i>
+                เริ่มต้นใช้งาน
+            </a>
+            <a href="{{ url_for('transfer') }}" class="btn btn-secondary">
+                <i data-lucide="play" style="width: 16px; height: 16px;"></i>
+                โอนเพลงเลย
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Platform Selection -->
+<section class="section section-warm" id="platforms">
+    <div class="container">
+        <h2 class="text-section text-center mb-6">เลือกบริการเพลง</h2>
+        <p class="text-body text-center mb-6" style="color: var(--warm-gray-500);">
+            เลือกแพลตฟอร์มต้นทางและปลายทางเพื่อเริ่มการโอน
+        </p>
+
+        <!-- Connection Flow Visualization -->
+        <div class="connection-flow">
+            <!-- Source -->
+            <div class="connection-node">
+                <div class="connection-node-box" id="source-box" style="cursor: pointer;" onclick="showPlatformSelection('source')">
+                    <i data-lucide="upload-cloud" style="width: 32px; height: 32px; color: var(--warm-gray-300); margin-bottom: 8px;"></i>
+                    <p class="text-body-medium mb-1">บัญชีต้นทาง</p>
+                    <p class="text-caption-light" id="source-status">ยังไม่เชื่อมต่อ</p>
+                    <p class="text-caption mt-2" style="color: var(--notion-blue);">+ เลือกแพลตฟอร์ม</p>
+                </div>
+            </div>
+
+            <!-- Arrow -->
+            <div class="connection-arrow">
+                <i data-lucide="arrow-right" style="width: 32px; height: 32px;"></i>
+            </div>
+
+            <!-- Destination -->
+            <div class="connection-node">
+                <div class="connection-node-box" id="dest-box" style="cursor: pointer;" onclick="showPlatformSelection('dest')">
+                    <i data-lucide="download-cloud" style="width: 32px; height: 32px; color: var(--warm-gray-300); margin-bottom: 8px;"></i>
+                    <p class="text-body-medium mb-1">บัญชีปลายทาง</p>
+                    <p class="text-caption-light" id="dest-status">ยังไม่เชื่อมต่อ</p>
+                    <p class="text-caption mt-2" style="color: var(--notion-blue);">+ เลือกแพลตฟอร์ม</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Platform Selection Modal -->
+<div id="platform-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <div class="card-header">
+            <div class="flex items-center justify-between">
+                <h4 class="text-card-title" id="modal-title">เลือกแพลตฟอร์ม</h4>
+                <button onclick="closePlatformModal()" class="btn btn-ghost" style="padding: 4px;">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="platform-grid" id="modal-platforms">
+                <!-- Platforms will be populated by JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Platform Grid -->
+<section class="section">
+    <div class="container">
+        <h3 class="text-subheading text-center mb-5">แพลตฟอร์มที่รองรับ</h3>
+        
+        <div class="platform-grid">
+            {% for platform_id, platform in platforms.items() %}
+                <div class="platform-card"
+                     style="cursor: default; text-align: center; padding: 32px 24px; display: flex; flex-direction: column; align-items: center;">
+                    <div class="platform-icon" style="background-color: {{ platform.color }}20; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; border-radius: 16px; margin-bottom: 16px;">
+                        {% if platform.icon == 'youtube' %}
+                            <svg viewBox="0 0 24 24" fill="{{ platform.color }}" style="width: 48px; height: 48px;">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                        {% elif platform.icon == 'spotify' %}
+                            <svg viewBox="0 0 24 24" fill="{{ platform.color }}" style="width: 48px; height: 48px;">
+                                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                            </svg>
+                        {% elif platform.icon == 'apple' %}
+                            <svg viewBox="0 0 24 24" fill="{{ platform.color }}" style="width: 48px; height: 48px;">
+                                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                            </svg>
+                        {% elif platform.icon == 'amazon' %}
+                            <svg viewBox="0 0 24 24" fill="{{ platform.color }}" style="width: 48px; height: 48px;">
+                                <path d="M13.04 14.69c0 1.38-.62 2.96-1.76 4.07-.88.87-2.18 1.4-3.71 1.4-3.11 0-5.7-2.52-5.7-5.7 0-3.17 2.59-5.69 5.7-5.69 1.53 0 2.83.53 3.71 1.4 1.14 1.11 1.76 2.69 1.76 4.07v.45zM12 5.5c-1.57 0-2.99.59-4.07 1.55-.93.84-1.55 2.01-1.73 3.3-.02.13-.03.27-.03.4v.5c0 .13.01.27.03.4.18 1.29.8 2.46 1.73 3.3 1.08.96 2.5 1.55 4.07 1.55s2.99-.59 4.07-1.55c.93-.84 1.55-2.01 1.73-3.3.02-.13.03-.27.03-.4v-.5c0-.13-.01-.27-.03-.4-.18-1.29-.8-2.46-1.73-3.3C14.99 6.09 13.57 5.5 12 5.5zm7.5 8.5c-.28 0-.5.22-.5.5v2c0 .28.22.5.5.5h.5c.28 0 .5-.22.5-.5v-2c0-.28-.22-.5-.5-.5h-.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                            </svg>
+                        {% else %}
+                            <i data-lucide="music" style="color: {{ platform.color }}; width: 48px; height: 48px;"></i>
+                        {% endif %}
+                    </div>
+                    <span class="platform-name" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">{{ platform.name }}</span>
+                    <span class="platform-status badge {{ 'badge-success' if platform.status == 'ready' else 'badge-warning' }}" style="margin-top: 12px; font-size: 12px;">
+                        {{ 'พร้อมใช้งาน' if platform.status == 'ready' else platform.description }}
+                    </span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section section-warm">
+    <div class="container">
+        <h2 class="text-section text-center mb-6">ฟีเจอร์หลัก</h2>
+        
+        <div class="grid grid-3">
+            <div class="card card-featured">
+                <div class="card-body text-center">
+                    <div style="width: 64px; height: 64px; background-color: var(--badge-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                        <i data-lucide="repeat" style="width: 32px; height: 32px; color: var(--notion-blue);"></i>
+                    </div>
+                    <h4 class="text-card-title mb-2">โอนระหว่างแพลตฟอร์ม</h4>
+                    <p class="text-body" style="color: var(--warm-gray-500);">
+                        ย้ายเพลย์ลิสต์จาก YouTube Music ไป Spotify หรือแพลตฟอร์มอื่นๆ ได้อย่างง่ายดาย
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card card-featured">
+                <div class="card-body text-center">
+                    <div style="width: 64px; height: 64px; background-color: rgba(42, 157, 153, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                        <i data-lucide="search" style="width: 32px; height: 32px; color: var(--teal);"></i>
+                    </div>
+                    <h4 class="text-card-title mb-2">จับคู่เพลงอัตโนมัติ</h4>
+                    <p class="text-body" style="color: var(--warm-gray-500);">
+                        ระบบ AI ช่วยหาและจับคู่เพลงที่ตรงกันระหว่างแพลตฟอร์มอัตโนมัติ
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card card-featured">
+                <div class="card-body text-center">
+                    <div style="width: 64px; height: 64px; background-color: rgba(255, 100, 200, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                        <i data-lucide="heart" style="width: 32px; height: 32px; color: var(--pink);"></i>
+                    </div>
+                    <h4 class="text-card-title mb-2">โอนทุกอย่าง</h4>
+                    <p class="text-body" style="color: var(--warm-gray-500);">
+                        ไม่ใช่แค่เพลย์ลิสต์ แต่ยังรวมถึง Liked Songs, Albums และ Subscriptions
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="section">
+    <div class="container">
+        <h2 class="text-section text-center mb-6">วิธีใช้งาน</h2>
+        
+        <div class="grid grid-4" style="margin-top: 48px;">
+            <div class="text-center">
+                <div style="width: 48px; height: 48px; background-color: var(--notion-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 700;">
+                    1
+                </div>
+                <h5 class="text-card-title mb-2">เลือกแพลตฟอร์ม</h5>
+                <p class="text-caption" style="color: var(--warm-gray-500);">
+                    เลือกบริการเพลงต้นทางและปลายทาง
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div style="width: 48px; height: 48px; background-color: var(--notion-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 700;">
+                    2
+                </div>
+                <h5 class="text-card-title mb-2">เชื่อมต่อ</h5>
+                <p class="text-caption" style="color: var(--warm-gray-500);">
+                    เข้าสู่ระบบกับบัญชีของคุณ
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div style="width: 48px; height: 48px; background-color: var(--notion-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 700;">
+                    3
+                </div>
+                <h5 class="text-card-title mb-2">เลือกเพลย์ลิสต์</h5>
+                <p class="text-caption" style="color: var(--warm-gray-500);">
+                    เลือกเพลย์ลิสต์ที่ต้องการโอน
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div style="width: 48px; height: 48px; background-color: var(--notion-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 700;">
+                    4
+                </div>
+                <h5 class="text-card-title mb-2">เริ่มโอน</h5>
+                <p class="text-caption" style="color: var(--warm-gray-500);">
+                    กดปุ่มโอนและรอให้เสร็จสิ้น
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedConnectionType = null;
+
+function showPlatformSelection(type) {
+    console.log('showPlatformSelection called with type:', type);
+    selectedConnectionType = type;
+    const modal = document.getElementById('platform-modal');
+    const title = document.getElementById('modal-title');
+    const container = document.getElementById('modal-platforms');
+
+    if (!modal || !title || !container) {
+        console.error('Modal elements not found');
+        return;
+    }
+
+    // If called from grid, show source/dest selection first
+    if (type === 'grid') {
+        title.textContent = 'เลือกประเภทการเชื่อมต่อ';
+        container.innerHTML = `
+            <div class="grid grid-2" style="gap: 16px;">
+                <div class="card" onclick="showPlatformSelection('source')" style="cursor: pointer; padding: 32px; text-align: center;">
+                    <i data-lucide="upload-cloud" style="width: 48px; height: 48px; color: var(--notion-blue); margin-bottom: 16px;"></i>
+                    <h4 class="text-card-title">บัญชีต้นทาง</h4>
+                    <p class="text-caption" style="color: var(--warm-gray-500);">โอนเพลงจากแพลตฟอร์มนี้</p>
+                </div>
+                <div class="card" onclick="showPlatformSelection('dest')" style="cursor: pointer; padding: 32px; text-align: center;">
+                    <i data-lucide="download-cloud" style="width: 48px; height: 48px; color: var(--notion-blue); margin-bottom: 16px;"></i>
+                    <h4 class="text-card-title">บัญชีปลายทาง</h4>
+                    <p class="text-caption" style="color: var(--warm-gray-500);">โอนเพลงไปยังแพลตฟอร์มนี้</p>
+                </div>
+            </div>
+        `;
+    } else {
+        title.textContent = type === 'source' ? 'เลือกแพลตฟอร์มต้นทาง' : 'เลือกแพลตฟอร์มปลายทาง';
+
+        // Use global platformsData variable
+        console.log('window.platformsData:', window.platformsData);
+
+        if (!window.platformsData) {
+            console.error('platformsData not found');
+            container.innerHTML = '<p style="color: red; text-align: center;">Error: Platform data not loaded</p>';
+            modal.style.display = 'flex';
+            return;
+        }
+
+        const platformsData = window.platformsData;
+        console.log('Using platforms data:', platformsData);
+
+        container.innerHTML = '';
+        for (const [platformId, platform] of Object.entries(platformsData)) {
+            const card = document.createElement('div');
+            card.className = 'platform-card';
+            card.style.cursor = platform.status === 'ready' ? 'pointer' : 'not-allowed';
+            card.style.opacity = platform.status === 'ready' ? '1' : '0.5';
+
+            if (platform.status === 'ready') {
+                card.onclick = () => selectPlatform(platformId);
+            }
+
+            // Generate logo SVG based on platform
+            let logoHtml = '';
+            if (platform.icon === 'youtube') {
+                logoHtml = `<svg viewBox="0 0 24 24" fill="${platform.color}" style="width: 48px; height: 48px;"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`;
+            } else if (platform.icon === 'spotify') {
+                logoHtml = `<svg viewBox="0 0 24 24" fill="${platform.color}" style="width: 48px; height: 48px;"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`;
+            } else if (platform.icon === 'apple') {
+                logoHtml = `<svg viewBox="0 0 24 24" fill="${platform.color}" style="width: 48px; height: 48px;"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>`;
+            } else if (platform.icon === 'amazon') {
+                logoHtml = `<svg viewBox="0 0 24 24" fill="${platform.color}" style="width: 48px; height: 48px;"><path d="M13.04 14.69c0 1.38-.62 2.96-1.76 4.07-.88.87-2.18 1.4-3.71 1.4-3.11 0-5.7-2.52-5.7-5.7 0-3.17 2.59-5.69 5.7-5.69 1.53 0 2.83.53 3.71 1.4 1.14 1.11 1.76 2.69 1.76 4.07v.45zM12 5.5c-1.57 0-2.99.59-4.07 1.55-.93.84-1.55 2.01-1.73 3.3-.02.13-.03.27-.03.4v.5c0 .13.01.27.03.4.18 1.29.8 2.46 1.73 3.3 1.08.96 2.5 1.55 4.07 1.55s2.99-.59 4.07-1.55c.93-.84 1.55-2.01 1.73-3.3.02-.13.03-.27.03-.4v-.5c0-.13-.01-.27-.03-.4-.18-1.29-.8-2.46-1.73-3.3C14.99 6.09 13.57 5.5 12 5.5zm7.5 8.5c-.28 0-.5.22-.5.5v2c0 .28.22.5.5.5h.5c.28 0 .5-.22.5-.5v-2c0-.28-.22-.5-.5-.5h-.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>`;
+            } else if (platform.icon === 'tidal') {
+                logoHtml = `<svg viewBox="0 0 24 24" fill="${platform.color}" style="width: 48px; height: 48px;"><path d="M12 2L9.5 7.5 5 4 7.5 9.5 2 12l5.5 2.5L5 20l4.5-3.5L12 22l2.5-5.5L19 20l-2.5-5.5L22 12l-5.5-2.5L19 4l-4.5 3.5L12 2z"/></svg>`;
+            } else if (platform.icon === 'deezer') {
+                logoHtml = `<svg viewBox="0 0 24 24" fill="${platform.color}" style="width: 48px; height: 48px;"><circle cx="6" cy="12" r="2"/><circle cx="6" cy="6" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="18" cy="6" r="2"/></svg>`;
+            } else if (platform.icon === 'soundcloud') {
+                logoHtml = `<svg viewBox="0 0 24 24" fill="${platform.color}" style="width: 48px; height: 48px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-5h1.5v-6H10v6zm3.5 0H15v-6h-1.5v6zm3.5 0H18.5v-6H17v6z"/></svg>`;
+            } else {
+                logoHtml = `<i data-lucide="music" style="color: ${platform.color}; width: 48px; height: 48px;"></i>`;
+            }
+
+            card.innerHTML = `
+                <div class="platform-icon" style="background-color: ${platform.color}20;">
+                    ${logoHtml}
+                </div>
+                <span class="platform-name">${platform.name}</span>
+                <span class="platform-status badge ${platform.status === 'ready' ? 'badge-success' : 'badge-warning'}">
+                    ${platform.status === 'ready' ? 'พร้อมใช้งาน' : platform.description}
+                </span>
+            `;
+            container.appendChild(card);
+        }
+    }
+
+    modal.style.display = 'flex';
+    lucide.createIcons();
+}
+
+function closePlatformModal() {
+    document.getElementById('platform-modal').style.display = 'none';
+    selectedConnectionType = null;
+}
+
+function selectPlatform(platformId) {
+    const connectionType = selectedConnectionType;
+    closePlatformModal();
+    window.location.href = `/setup/${platformId}?as=${connectionType}`;
+}
+
+// Close modal on outside click
+document.getElementById('platform-modal').addEventListener('click', function(e) {
+    if (e.target === this) closePlatformModal();
+});
+
+// Update connection status from server
+    async function updateConnectionStatus() {
+        try {
+            const response = await fetch('/status');
+            const data = await response.json();
+            
+            const sourceBox = document.getElementById('source-box');
+            const destBox = document.getElementById('dest-box');
+            const statusBadge = document.getElementById('nav-connection-status');
+            
+            if (data.source_connected) {
+                sourceBox.classList.add('connected');
+                sourceBox.innerHTML = `
+                    <i data-lucide="check-circle" style="width: 32px; height: 32px; color: var(--teal); margin-bottom: 8px;"></i>
+                    <p class="text-body-medium mb-1">${data.source_platform}</p>
+                    <p class="text-caption" style="color: var(--teal);">เชื่อมต่อแล้ว</p>
+                    <a href="/disconnect/source" class="btn btn-ghost mt-3" style="width: 100%;">ตัดการเชื่อมต่อ</a>
+                `;
+            }
+            
+            if (data.dest_connected) {
+                destBox.classList.add('connected');
+                destBox.innerHTML = `
+                    <i data-lucide="check-circle" style="width: 32px; height: 32px; color: var(--teal); margin-bottom: 8px;"></i>
+                    <p class="text-body-medium mb-1">${data.dest_platform}</p>
+                    <p class="text-caption" style="color: var(--teal);">เชื่อมต่อแล้ว</p>
+                    <a href="/disconnect/dest" class="btn btn-ghost mt-3" style="width: 100%;">ตัดการเชื่อมต่อ</a>
+                `;
+            }
+            
+            if (data.source_connected && data.dest_connected) {
+                statusBadge.textContent = 'พร้อมโอน';
+                statusBadge.className = 'badge badge-success';
+            } else if (data.source_connected || data.dest_connected) {
+                statusBadge.textContent = 'เชื่อมต่อบางส่วน';
+                statusBadge.className = 'badge badge-warning';
+            } else {
+                statusBadge.textContent = 'ไม่เชื่อมต่อ';
+                statusBadge.className = 'badge';
+            }
+            
+            // Re-initialize Lucide icons
+            lucide.createIcons();
+            
+        } catch (error) {
+            console.error('Failed to update status:', error);
+        }
+    }
+    
+    // Update on page load
+    updateConnectionStatus();
+</script>
+{% endblock %}

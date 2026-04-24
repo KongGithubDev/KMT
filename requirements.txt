@@ -1,0 +1,29 @@
+# Core
+google-api-python-client>=2.100.0
+google-auth-httplib2>=0.1.1
+google-auth-oauthlib>=1.0.0
+ytmusicapi>=1.3.0
+click>=8.1.0
+colorama>=0.4.6
+tqdm>=4.66.0
+python-dotenv>=1.0.0
+
+# Web UI
+flask>=3.0.0
+werkzeug>=3.0.0
+
+# Track Matching
+fuzzywuzzy>=0.18.0
+python-Levenshtein>=0.21.0  # Speed up fuzzywuzzy
+
+# OAuth & API
+requests>=2.31.0
+
+# Production Server
+gunicorn>=21.2.0
+
+# Spotify (commented until needed)
+# spotipy>=2.23.0
+
+# Apple Music (commented until needed)
+# PyJWT>=2.8.0

@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}CSV Transfer - Music Transfer{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 80px;">
+    <div class="container" style="max-width: 800px;">
+        <div class="text-center mb-6">
+            <h2 class="text-section">CSV Import/Export</h2>
+            <p class="text-body-large mt-3" style="color: var(--warm-gray-500);">
+                โอนเพลย์ลิสต์โดยไม่ต้องใช้ Spotify API (สำหรับ Spotify Free)
+            </p>
+        </div>
+
+        <!-- Step 1: Export from Source -->
+        <div class="card mb-6">
+            <div class="card-body">
+                <div class="flex items-center gap-3 mb-4">
+                    <div style="width: 32px; height: 32px; background-color: var(--notion-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">1</div>
+                    <h3 class="text-card-title">ส่งออกจากบัญชีต้นทาง</h3>
+                </div>
+
+                {% if not session.get('connections', {}).get('source') %}
+                <div class="alert alert-warning mb-4">
+                    <p class="text-body-medium">กรุณาเชื่อมต่อบัญชีต้นทางก่อน</p>
+                </div>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i data-lucide="link" style="width: 16px; height: 16px;"></i>
+                    เชื่อมต่อบัญชีต้นทาง
+                </a>
+                {% else %}
+                <div class="alert alert-info mb-4">
+                    <p class="text-body-medium">เลือกเพลย์ลิสต์เพื่อส่งออกเป็น CSV</p>
+                </div>
+
+                <div id="export-playlists-container">
+                    <p class="text-caption-light">กำลังโหลดเพลย์ลิสต์...</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Step 2: Import to Destination -->
+        <div class="card mb-6">
+            <div class="card-body">
+                <div class="flex items-center gap-3 mb-4">
+                    <div style="width: 32px; height: 32px; background-color: var(--notion-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">2</div>
+                    <h3 class="text-card-title">นำเข้าสู่บัญชีปลายทาง</h3>
+                </div>
+
+                {% if not session.get('connections', {}).get('dest') %}
+                <div class="alert alert-warning mb-4">
+                    <p class="text-body-medium">กรุณาเชื่อมต่อบัญชีปลายทางก่อน</p>
+                </div>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i data-lucide="link" style="width: 16px; height: 16px;"></i>
+                    เชื่อมต่อบัญชีปลายทาง
+                </a>
+                {% else %}
+                <form id="csv-import-form" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label class="text-body-medium mb-2" style="display: block;">ไฟล์ CSV</label>
+                        <input type="file" name="file" accept=".csv" required class="form-input" style="padding: 12px;">
+                        <p class="text-caption-light mt-2">รองรับไฟล์ CSV ที่มีคอลัมน์: Title, Artist, Album, Duration (ms), Platform ID</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-body-medium mb-2" style="display: block;">ชื่อเพลย์ลิสต์ใหม่</label>
+                        <input type="text" name="playlist_name" placeholder="Imported Playlist" value="Imported from CSV" class="form-input">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i data-lucide="upload" style="width: 16px; height: 16px;"></i>
+                        นำเข้าเพลง
+                    </button>
+                </form>
+
+                <div id="import-result" class="mt-4" style="display: none;">
+                    <!-- Result will be shown here -->
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Alternative: Manual CSV -->
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-card-title mb-3">สร้าง CSV เอง</h3>
+                <p class="text-body mb-3" style="color: var(--warm-gray-500);">
+                    ถ้าคุณมีรายชื่อเพลงจากแหล่งอื่น สามารถสร้างไฟล์ CSV ด้วยตนเอง:
+                </p>
+
+                <div style="background-color: var(--warm-white); padding: 16px; border-radius: 8px; font-family: 'Monaco', monospace; font-size: 13px; overflow-x: auto;">
+                    <code>Title,Artist,Album,Duration (ms),Platform ID<br>
+Bohemian Rhapsody,Queen,A Night at the Opera,354320,<br>
+Hotel California,Eagles,Hotel California,391376,<br>
+Imagine,John Lennon,Imagine,183946,</code>
+                </div>
+
+                <p class="text-caption-light mt-3">
+                    หมายเหตุ: คอลัมน์ Duration และ Platform ID เป็นทางเลือก
+                </p>
+            </div>
+        </div>
+
+        <div class="text-center mt-6">
+            <a href="{{ url_for('index') }}" class="btn btn-ghost">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                กลับหน้าหลัก
+            </a>
+        </div>
+    </div>
+</section>
+
+<script>
+// Load playlists for export
+async function loadPlaylistsForExport() {
+    const container = document.getElementById('export-playlists-container');
+    if (!container) return;
+
+    try {
+        const response = await fetch('/status');
+        const data = await response.json();
+
+        if (!data.source_connected) {
+            container.innerHTML = '<p class="text-caption-light">กรุณาเชื่อมต่อบัญชีต้นทางก่อน</p>';
+            return;
+        }
+
+        // Load playlists
+        const playlistResponse = await fetch('/api/playlists');
+        const playlistData = await playlistResponse.json();
+
+        if (playlistData.playlists && playlistData.playlists.length > 0) {
+            let html = '<div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">';
+            playlistData.playlists.forEach(playlist => {
+                html += `
+                    <div class="card" style="cursor: pointer;" onclick="exportPlaylist('${playlist.platform_id}', '${playlist.name}')">
+                        <div class="card-body">
+                            <h4 class="text-card-title" style="font-size: 16px;">${playlist.name}</h4>
+                            <p class="text-caption-light">${playlist.api_track_count} เพลง</p>
+                            <button class="btn btn-secondary mt-3" style="width: 100%;">
+                                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+                                ส่งออก CSV
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+            lucide.createIcons();
+        } else {
+            container.innerHTML = '<p class="text-caption-light">ไม่พบเพลย์ลิสต์</p>';
+        }
+    } catch (error) {
+        container.innerHTML = `<p class="text-caption-light" style="color: var(--notion-red);">เกิดข้อผิดพลาด: ${error.message}</p>`;
+    }
+}
+
+// Export playlist to CSV
+function exportPlaylist(playlistId, playlistName) {
+    window.location.href = `/api/playlists/${playlistId}/export/csv`;
+}
+
+// Handle CSV import form
+const importForm = document.getElementById('csv-import-form');
+if (importForm) {
+    importForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const resultDiv = document.getElementById('import-result');
+
+        resultDiv.innerHTML = '<p class="text-caption-light">กำลังนำเข้า...</p>';
+        resultDiv.style.display = 'block';
+
+        try {
+            const response = await fetch('/api/import/csv', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <p class="text-body-medium mb-2">✅ นำเข้าสำเร็จ!</p>
+                        <p class="text-caption-light">
+                            สร้างเพลย์ลิสต์ "${result.playlist_name}"<br>
+                            นำเข้า: ${result.success}/${result.total_tracks} เพลง
+                            ${result.failed > 0 ? `<br>ไม่สำเร็จ: ${result.failed} เพลง` : ''}
+                        </p>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-error">
+                        <p class="text-body-medium">❌ เกิดข้อผิดพลาด: ${result.error}</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-error">
+                    <p class="text-body-medium">❌ เกิดข้อผิดพลาด: ${error.message}</p>
+                </div>
+            `;
+        }
+    });
+}
+
+// Load playlists on page load
+loadPlaylistsForExport();
+</script>
+
+<style>
+.grid {
+    display: grid;
+}
+</style>
+{% endblock %}

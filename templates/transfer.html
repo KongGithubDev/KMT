@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}โอนเพลย์ลิสต์ - Music Transfer{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 60px;">
+    <div class="container" style="max-width: 900px;">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h2 class="text-section">โอนเพลย์ลิสต์</h2>
+            <p class="text-body-large mt-3" style="color: var(--warm-gray-500);">
+                เลือกเพลย์ลิสต์ที่ต้องการโอนจากบัญชีต้นทาง
+            </p>
+        </div>
+
+        <!-- Demo Mode Banner -->
+        <div class="alert alert-info mb-5" style="background-color: rgba(255, 193, 7, 0.1); border-color: #ffc107; color: #ffc107;">
+            <div class="flex items-center gap-3">
+                <i data-lucide="info" style="width: 24px; height: 24px;"></i>
+                <div>
+                    <p class="text-body-medium mb-1" style="color: #ffc107;">🎮 DEMO MODE - ไม่มีการโอนจริง</p>
+                    <p class="text-caption-light">Web UI นี้เป็นเพียง demo แสดง UI และการทำงาน ไม่มีการโอนเพลงจริง</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="card mb-5">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="check-circle-2" style="width: 24px; height: 24px; color: var(--teal);"></i>
+                        <span class="text-body-medium">เชื่อมต่อพร้อมใช้งาน</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="badge">YouTube Music</span>
+                        <span class="text-caption-light">→</span>
+                        <span class="badge">YouTube Music</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-3 mb-5">
+            <button class="card card-featured" onclick="transferLikedSongs()" style="cursor: pointer; border: none; text-align: left;">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div style="width: 40px; height: 40px; background-color: rgba(255, 100, 200, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="heart" style="width: 20px; height: 20px; color: var(--pink);"></i>
+                        </div>
+                        <h5 class="text-card-title" style="font-size: 18px;">Liked Songs</h5>
+                    </div>
+                    <p class="text-caption" style="color: var(--warm-gray-500);">โอนเพลงที่กดถูกใจทั้งหมด</p>
+                </div>
+            </button>
+
+            <button class="card card-featured" onclick="transferSavedAlbums()" style="cursor: pointer; border: none; text-align: left;">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div style="width: 40px; height: 40px; background-color: rgba(0, 117, 222, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="disc" style="width: 20px; height: 20px; color: var(--notion-blue);"></i>
+                        </div>
+                        <h5 class="text-card-title" style="font-size: 18px;">Saved Albums</h5>
+                    </div>
+                    <p class="text-caption" style="color: var(--warm-gray-500);">โอนอัลบั้มที่บันทึกไว้</p>
+                </div>
+            </button>
+
+            <button class="card card-featured" onclick="transferSubscriptions()" style="cursor: pointer; border: none; text-align: left;">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div style="width: 40px; height: 40px; background-color: rgba(42, 157, 153, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="users" style="width: 20px; height: 20px; color: var(--teal);"></i>
+                        </div>
+                        <h5 class="text-card-title" style="font-size: 18px;">Subscriptions</h5>
+                    </div>
+                    <p class="text-caption" style="color: var(--warm-gray-500);">โอนรายชื่อศิลปินที่ติดตาม</p>
+                </div>
+            </button>
+        </div>
+
+        <!-- Playlists Section -->
+        <h3 class="text-subheading mb-4">เพลย์ลิสต์ของคุณ</h3>
+
+        {% if playlists %}
+            <div class="grid" style="gap: 12px;">
+                {% for playlist in playlists %}
+                    <div class="card" id="playlist-{{ loop.index }}">
+                        <div class="card-body">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3" style="flex: 1;">
+                                    <div style="width: 48px; height: 48px; background-color: var(--warm-white); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="list-music" style="width: 24px; height: 24px; color: var(--warm-gray-500);"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h5 class="text-card-title" style="font-size: 16px;">{{ playlist.name }}</h5>
+                                        <p class="text-caption" style="color: var(--warm-gray-500);">
+                                            {{ playlist.track_count() }} เพลง
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-2">
+                                    <button 
+                                        class="btn btn-secondary" 
+                                        onclick="previewPlaylist('{{ playlist.platform_id }}', '{{ playlist.name }}')"
+                                    >
+                                        <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                                        ดูรายการ
+                                    </button>
+                                    <button 
+                                        class="btn btn-primary" 
+                                        onclick="transferPlaylist('{{ playlist.platform_id }}', '{{ playlist.name }}')"
+                                    >
+                                        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                                        โอน
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Track Preview (hidden by default) -->
+                            <div id="preview-{{ playlist.platform_id }}" style="display: none; margin-top: 16px; padding-top: 16px; border-top: var(--border-whisper);">
+                                <p class="text-caption-light mb-2">กำลังโหลด...</p>
+                            </div>
+
+                            <!-- Transfer Progress (hidden by default) -->
+                            <div id="progress-{{ playlist.platform_id }}" style="display: none; margin-top: 16px;">
+                                <div style="background-color: var(--warm-white); height: 8px; border-radius: 4px; overflow: hidden;">
+                                    <div 
+                                        id="progress-bar-{{ playlist.platform_id }}"
+                                        style="background-color: var(--notion-blue); height: 100%; width: 0%; transition: width 0.3s ease;"
+                                    ></div>
+                                </div>
+                                <p class="text-caption mt-2" id="progress-text-{{ playlist.platform_id }}">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center" style="padding: 48px;">
+                    <i data-lucide="music" style="width: 48px; height: 48px; color: var(--warm-gray-300); margin-bottom: 16px;"></i>
+                    <h5 class="text-card-title mb-2">ไม่พบเพลย์ลิสต์</h5>
+                    <p class="text-body" style="color: var(--warm-gray-500);">
+                        ไม่สามารถดึงรายการเพลย์ลิสต์ได้ กรุณาตรวจสอบการเชื่อมต่อ
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Transfer All Button -->
+        <div class="mt-5 text-center">
+            <button class="btn btn-primary" onclick="transferAllPlaylists()" style="padding: 12px 32px;">
+                <i data-lucide="layers" style="width: 20px; height: 20px;"></i>
+                โอนทุกเพลย์ลิสต์
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Transfer Modal -->
+<div id="transfer-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <div class="card-header">
+            <div class="flex items-center justify-between">
+                <h4 class="text-card-title">กำลังโอนเพลย์ลิสต์</h4>
+                <button onclick="closeModal()" class="btn btn-ghost" style="padding: 4px;">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="modal-content">
+                <div style="background-color: var(--warm-white); height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 16px;">
+                    <div id="modal-progress" style="background-color: var(--notion-blue); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                </div>
+                <p class="text-body-medium" id="modal-status">กำลังโอนเพลง...</p>
+                <p class="text-caption" id="modal-detail" style="color: var(--warm-gray-500); margin-top: 8px;">0 / 0 เพลง</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let activeTransfers = new Set();
+
+function previewPlaylist(playlistId, name) {
+    const previewDiv = document.getElementById('preview-' + playlistId);
+    
+    if (previewDiv.style.display === 'none') {
+        previewDiv.style.display = 'block';
+        previewDiv.innerHTML = '<p class="text-caption-light">กำลังโหลด...</p>';
+        
+        fetch(`/api/playlists/${playlistId}/tracks`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.tracks && data.tracks.length > 0) {
+                    const trackList = data.tracks.slice(0, 10).map(t => 
+                        `<div class="flex items-center justify-between py-2" style="border-bottom: var(--border-whisper);">
+                            <div>
+                                <p class="text-body-medium" style="font-size: 14px;">${t.title}</p>
+                                <p class="text-caption-light">${t.artists.join(', ')}</p>
+                            </div>
+                        </div>`
+                    ).join('');
+                    
+                    const moreCount = data.tracks.length > 10 ? data.tracks.length - 10 : 0;
+                    previewDiv.innerHTML = `
+                        <p class="text-caption mb-2">แสดง 10 จาก ${data.tracks.length} เพลง:</p>
+                        ${trackList}
+                        ${moreCount > 0 ? `<p class="text-caption-light mt-2">และอีก ${moreCount} เพลง...</p>` : ''}
+                    `;
+                } else {
+                    previewDiv.innerHTML = '<p class="text-caption-light">ไม่พบเพลงในเพลย์ลิสต์</p>';
+                }
+            })
+            .catch(err => {
+                previewDiv.innerHTML = '<p class="text-caption" style="color: var(--pink);">เกิดข้อผิดพลาดในการโหลด</p>';
+            });
+    } else {
+        previewDiv.style.display = 'none';
+    }
+    
+    lucide.createIcons();
+}
+
+async function transferPlaylist(playlistId, name) {
+    if (activeTransfers.has(playlistId)) return;
+    activeTransfers.add(playlistId);
+    
+    showModal(name);
+    
+    try {
+        const response = await fetch('/api/transfer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ playlist_id: playlistId, new_name: name })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            updateModalStatus('เกิดข้อผิดพลาด: ' + data.error, 0, 0);
+        } else {
+            // Simulate progress (in real implementation, use WebSocket or polling)
+            simulateProgress(playlistId, name);
+        }
+    } catch (error) {
+        updateModalStatus('เกิดข้อผิดพลาดในการเชื่อมต่อ', 0, 0);
+    }
+    
+    activeTransfers.delete(playlistId);
+}
+
+function simulateProgress(playlistId, name) {
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            updateModalStatus('โอนเสร็จสิ้น!', 100, 100);
+            setTimeout(closeModal, 1500);
+        } else {
+            updateModalStatus('กำลังโอนเพลง...', Math.floor(progress), 100);
+        }
+    }, 300);
+}
+
+function showModal(name) {
+    const modal = document.getElementById('transfer-modal');
+    modal.style.display = 'flex';
+    updateModalStatus('กำลังโอนเพลง...', 0, 100);
+}
+
+function closeModal() {
+    const modal = document.getElementById('transfer-modal');
+    modal.style.display = 'none';
+}
+
+function updateModalStatus(text, current, total) {
+    document.getElementById('modal-status').textContent = text;
+    document.getElementById('modal-detail').textContent = `${current} / ${total} เพลง`;
+    document.getElementById('modal-progress').style.width = `${(current / total) * 100}%`;
+}
+
+function transferLikedSongs() {
+    showModal('Liked Songs');
+    simulateProgress('liked', 'Liked Songs');
+}
+
+function transferSavedAlbums() {
+    showModal('Saved Albums');
+    simulateProgress('albums', 'Saved Albums');
+}
+
+function transferSubscriptions() {
+    showModal('Subscriptions');
+    simulateProgress('subs', 'Subscriptions');
+}
+
+function transferAllPlaylists() {
+    showModal('ทุกเพลย์ลิสต์');
+    simulateProgress('all', 'ทุกเพลย์ลิสต์');
+}
+
+// Close modal on outside click
+document.getElementById('transfer-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+lucide.createIcons();
+</script>
+{% endblock %}

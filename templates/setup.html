@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}เชื่อมต่อ {{ platform }} - Music Transfer{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 80px;">
+    <div class="container" style="max-width: 600px;">
+        <div class="text-center mb-6">
+            <h2 class="text-section">เชื่อมต่อ {{ platform }}</h2>
+            <p class="text-body-large mt-3" style="color: var(--warm-gray-500);">
+                เลือกวิธีการเชื่อมต่อบัญชีของคุณ
+            </p>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <!-- Tabs -->
+                <div class="flex gap-3 mb-4" style="border-bottom: var(--border-whisper); padding-bottom: 16px;">
+                    <button type="button" class="btn btn-secondary active-tab" id="tab-oauth" 
+                            onclick="showTab('oauth')" style="flex: 1;">
+                        <i data-lucide="shield" style="width: 16px; height: 16px;"></i>
+                        OAuth (แนะนำ)
+                    </button>
+                    <button type="button" class="btn btn-ghost" id="tab-browser" 
+                            onclick="showTab('browser')" style="flex: 1;">
+                        <i data-lucide="globe" style="width: 16px; height: 16px;"></i>
+                        Browser Headers
+                    </button>
+                </div>
+
+                <!-- Browser Tab -->
+                <div id="content-browser">
+                    <div class="alert alert-info mb-4">
+                        <p class="text-body-medium mb-2">วิธีที่ง่ายและเร็วที่สุด</p>
+                        <p class="text-caption-light">ไม่ต้องสร้าง Google Cloud Project แค่คัดลอก headers จาก browser</p>
+                    </div>
+
+                    <div class="alert alert-warning mb-4">
+                        <p class="text-body-medium mb-1">⚠️ สำคัญ: ใช้ request จาก /browse เท่านั้น</p>
+                        <p class="text-caption-light">อย่าใช้ /account_menu หรือ /get_search_suggestions - จะไม่มี cookie ที่ถูกต้อง</p>
+                    </div>
+
+                    <h5 class="text-card-title mb-3">ขั้นตอนการรับ Headers:</h5>
+                    
+                    <ol style="padding-left: 24px; margin-bottom: 24px;">
+                        <li class="text-body mb-2" style="color: var(--warm-gray-500);">
+                            เปิด <a href="https://music.youtube.com" target="_blank" style="color: var(--notion-blue);">music.youtube.com</a> และเข้าสู่ระบบ
+                        </li>
+                        <li class="text-body mb-2" style="color: var(--warm-gray-500);">
+                            กด <strong>F12</strong> เปิด Developer Tools → แท็บ <strong>Network</strong>
+                        </li>
+                        <li class="text-body mb-2" style="color: var(--warm-gray-500);">
+                            Filter พิมพ์: <code style="background: var(--warm-white); padding: 2px 6px; border-radius: 4px;">/browse</code> (สำคัญ!)
+                        </li>
+                        <li class="text-body mb-2" style="color: var(--warm-gray-500);">
+                            <strong>คลิกเข้า playlist ใดก็ได้</strong> หรือกดเล่นเพลง
+                        </li>
+                        <li class="text-body mb-2" style="color: var(--warm-gray-500);">
+                            หา request ที่มี <code style="background: var(--warm-white); padding: 2px 6px; border-radius: 4px;">/browse</code> ใน URL
+                            <br><span class="text-caption-light">ตัวอย่าง: https://music.youtube.com/youtubei/v1/browse?...</span>
+                        </li>
+                        <li class="text-body mb-2" style="color: var(--warm-gray-500);">
+                            คลิกขวาที่ request → <strong>Copy as cURL (bash)</strong>
+                        </li>
+                        <li class="text-body mb-2" style="color: var(--warm-gray-500);">
+                            วางด้านล่างนี้ แล้วกด <strong>เชื่อมต่อบัญชี</strong>
+                        </li>
+                    </ol>
+
+                    <form method="POST" action="{{ url_for('setup_platform', platform=platform) }}?as={{ request.args.get('as', 'source') }}">
+                        <input type="hidden" name="setup_type" value="browser">
+                        
+                        <div class="mb-4">
+                            <label class="text-body-medium mb-2" style="display: block;">Browser Headers (cURL)</label>
+                            <textarea 
+                                name="headers_raw" 
+                                class="form-input" 
+                                placeholder="curl 'https://music.youtube.com/youtubei/v1/browse...' -H 'accept: */*' ..."
+                                required
+                                style="min-height: 200px; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px;"
+                            ></textarea>
+                            <p class="text-caption-light mt-2">วางคำสั่ง cURL ที่คัดลอกมาทั้งหมด</p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            <i data-lucide="link" style="width: 16px; height: 16px;"></i>
+                            เชื่อมต่อบัญชี
+                        </button>
+                    </form>
+                </div>
+
+                <!-- OAuth Tab -->
+                <div id="content-oauth">
+                    <div class="alert alert-info mb-4">
+                        <p class="text-body-medium mb-2">วิธีที่ปลอดภัยและทนทาน</p>
+                        <p class="text-caption-light">เข้าสู่ระบบผ่าน {{ platform }} โดยตรง ไม่ต้องคัดลอก headers</p>
+                    </div>
+                    
+                    <div class="alert alert-warning mb-4">
+                        <p class="text-body-medium mb-2">⚠️ สำคัญ: คุณจะถูกนำไปยังหน้า {{ platform }}</p>
+                        <p class="text-caption-light">หลังจากอนุญาต คุณจะถูก redirect กลับมายังเว็บไซต์นี้</p>
+                    </div>
+
+                    <h5 class="text-card-title mb-3">ขั้นตอนการเชื่อมต่อ:</h5>
+                    
+                    <ol style="padding-left: 24px; margin-bottom: 24px;">
+                        <li class="text-body mb-2" style="color: var(--warm-gray-500);">
+                            กดปุ่ม <strong>"เข้าสู่ระบบ {{ platform }}"</strong> ด้านล่าง
+                        </li>
+                        <li class="text-body mb-2" style="color: var(--warm-gray-500);">
+                            ลงชื่อเข้าใช้บัญชี {{ platform }} ของคุณ
+                        </li>
+                        <li class="text-body mb-2" style="color: var(--warm-gray-500);">
+                            กด <strong>"อนุญาต"</strong> เพื่อให้แอพเข้าถึงเพลย์ลิสต์
+                        </li>
+                        <li class="text-body mb-2" style="color: var(--warm-gray-500);">
+                            กลับมายังหน้านี้และเริ่มใช้งานได้ทันที
+                        </li>
+                    </ol>
+
+                    <form method="POST" action="{{ url_for('setup_platform', platform=platform) }}?as={{ request.args.get('as', 'source') }}">
+                        <input type="hidden" name="setup_type" value="oauth">
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            <i data-lucide="log-in" style="width: 16px; height: 16px;"></i>
+                            เข้าสู่ระบบ {{ platform }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('index') }}" class="btn btn-ghost">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                กลับหน้าหลัก
+            </a>
+        </div>
+    </div>
+</section>
+
+<script>
+function showTab(tab) {
+    // Hide all content
+    document.getElementById('content-browser').style.display = 'none';
+    document.getElementById('content-oauth').style.display = 'none';
+    
+    // Reset all tabs
+    document.getElementById('tab-browser').className = 'btn btn-ghost';
+    document.getElementById('tab-browser').style.flex = '1';
+    document.getElementById('tab-oauth').className = 'btn btn-ghost';
+    document.getElementById('tab-oauth').style.flex = '1';
+    
+    // Show selected content and highlight tab
+    document.getElementById('content-' + tab).style.display = 'block';
+    document.getElementById('tab-' + tab).className = 'btn btn-secondary active-tab';
+    document.getElementById('tab-' + tab).style.flex = '1';
+}
+
+// Show OAuth tab by default on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Hide browser content initially
+    document.getElementById('content-browser').style.display = 'none';
+});
+</script>
+
+<style>
+.active-tab {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+}
+</style>
+{% endblock %}

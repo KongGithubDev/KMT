@@ -286,7 +286,7 @@ def setup_platform(platform):
             config = OAUTH_CONFIG.get(platform)
             if not config or not config.get('client_id'):
                 flash(f'OAuth ไม่พร้อมใช้งานสำหรับ {platform} กรุณาตั้งค่า Client ID', 'error')
-                return redirect(url_for('setup_platform', platform=platform, as=connection_type))
+                return redirect(url_for('setup_platform', platform=platform, **{'as': connection_type}))
             
             # Generate state parameter with connection type
             state_data = {

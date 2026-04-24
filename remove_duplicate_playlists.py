@@ -31,13 +31,16 @@ def parse_curl_command(curl_command: str) -> str:
     """
     headers_dict = {}
     
-    # Extract -H headers (format: -H 'key: value')
-    header_matches = re.findall(r"-H\s+'([^:]+):(.+?)'(?:\s*\\?\n?|$)", curl_command, re.MULTILINE)
+    # Extract -H headers (format: -H 'key: value' or -H "key: value")
+    # Support both single and double quotes
+    header_pattern = r'-H\s+["\']([^:"\']+):([^"\']*?)["\']'
+    header_matches = re.findall(header_pattern, curl_command, re.MULTILINE)
     for key, value in header_matches:
         headers_dict[key.lower().strip()] = value.strip()
     
     # Extract -b cookie and convert to header format
-    cookie_match = re.search(r"-b\s+'([^']+)'", curl_command)
+    # Support both -b 'value' and --data-raw (which we ignore)
+    cookie_match = re.search(r"-b\s+['\"]([^'\"]+)['\"]", curl_command)
     if cookie_match:
         headers_dict['cookie'] = cookie_match.group(1)
     
@@ -46,7 +49,11 @@ def parse_curl_command(curl_command: str) -> str:
     for key, value in headers_dict.items():
         header_lines.append(f"{key}: {value}")
     
-    return '\n'.join(header_lines)
+    result = '\n'.join(header_lines)
+    if not result.strip():
+        raise ValueError("Could not parse any headers from cURL command")
+    
+    return result
 
 
 def get_provider(platform: str):
